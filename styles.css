@@ -1,0 +1,9 @@
+#settingArea {
+    background-color: lightgray;
+    border: 1px solid black;
+}
+
+.playField {
+    border:1px solid #d3d3d3;
+    height: 600px;
+}

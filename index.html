@@ -1,0 +1,157 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="styles.css"/>
+    <title>Aim Game</title>
+</head>
+<body>
+    <!-- Header Section -->
+    <button type="button" class="btn btn-primary" onclick='startGame()'>Start Game</button>
+    <button type="button" class="btn btn-primary" onclick='quitGame()'>Stop Game</button>
+    <!-- Main Game area -->
+    <div class="container-fluid">
+        <div class="row row-content">
+            <!-- settings -->
+            <div id="settingArea" class="col-md-12">
+                <p>Difficulty:</p>
+                <form>
+                    <input checked=checked type="radio" id="easy" name="difficulty" value="50">
+                    <label for="easy">Easy</label>
+                    <input type="radio" id="medium" name="difficulty" value="35">
+                    <label for="medium">Medium</label>
+                    <input type="radio" id="hard" name="difficulty" value="15">
+                    <label for="hard">Hard</label>
+                    <input type="radio" id="insane" name="difficulty" value="10">
+                    <label for="insane">Insane</label>
+                </form>
+            </div>
+            <!-- playing field -->
+            <svg class="playField" height="1000" width="1200">
+                <text x='10' y='20' class='medium' id='topScore'>High Score: </text>
+            </svg>
+        </div>
+    </div>
+   <script>
+       // -------------- Class constructor ----------------
+       class Ball {
+        constructor(r){
+            this.target = document.querySelector('svg');
+            this.el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            this.target.appendChild(this.el);
+            this.x = Math.floor(Math.random() * 900 + 50);
+            this.y = Math.floor(Math.random() * 450 + 50);
+            this.r = r;
+            this.color = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},${Math.random()})`;
+            this.dead = false;
+            this.el.addEventListener("click", ()=>{
+                this.target.removeChild(this.el);
+                this.dead = true;
+            });
+        }
+        render(){
+            this.el.setAttribute('cx', this.x);
+            this.el.setAttribute('cy', this.y);
+            this.el.setAttribute('r', this.r);
+            this.el.setAttribute('fill', this.color);
+            this.el.setAttribute('stroke', 'black');
+            this.el.setAttribute('stroke-width', '2');
+        }
+        reduce(){
+            this.r -= 1;
+        }
+        remove(){
+            this.target.removeChild(this.el);
+        }
+    }
+    // --------------- javascript functions -------------
+    const playField = document.querySelector('.playField');
+    let gameOver = true;
+    playField.addEventListener("click", function(event) {
+        if (event.currentTarget !== event.target){
+            return;
+        }
+        gameOver = true;
+    }, false);
+    const circles = [];
+    let score = 0;
+    let highScore = 0;
+    let difficulty;
+    let radius = 0;
+
+    function startGame(){
+        if(gameOver){
+            gameOver = false;
+            radius = checkRadioButtons();
+            gameLoop();
+        }
+        return;
+    }
+
+    function gameLoop(){
+        const gameOver = checkGameStatus();
+        if(gameOver){
+            stopGame();
+        } else {
+            checkBallStatus();
+            addCircle();
+            updateCircles();
+            setTimeout(gameLoop, 1000 - (score * 10));
+        }
+    }
+    function checkRadioButtons(){
+        return document.querySelector('input[name="difficulty"]:checked').value;
+    }
+    function addCircle(){
+        const ball = new Ball(radius);
+        circles.push(ball);
+    }
+    function updateCircles(){
+        circles.map(circle=>circle.reduce());
+        circles.map(circle=>circle.render());
+    }
+
+    function checkBallStatus(){
+        circles.forEach((circle, i)=>{  
+            if(circles[i].dead){
+                circle = circles.splice(i,1);
+                score++;
+                if(score > highScore){
+                    highScore = score;
+                    document.querySelector('#topScore').innerHTML = "High Score: " + highScore;
+                }
+            }
+        })
+    }
+    function checkGameStatus(){
+        if(circles.length > 10 || gameOver){
+            return true;
+        } 
+        return false;
+    }
+ 
+
+    function printScore(){
+        window.alert('Your Score is ' + score);
+    }
+
+    function stopGame(){
+        clearBoard();
+        printScore();
+        circles.length = 0;
+        score = 0;
+    }
+
+    function quitGame(){
+        gameOver = true;
+    }
+
+    function clearBoard(){
+        while(playField.lastChild !== document.querySelector('text')){
+            playField.removeChild(playField.lastChild);
+        }
+    }
+   </script>
+</body>
+</html>
