@@ -1,48 +1,86 @@
-// --------- Class constructor ------------
-class Ball {
-    constructor(x,y){
-        this.target = document.querySelector('svg');
-        this.el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        this.target.appendChild(this.el);
-        this.x = x;
-        this.y = y;
-        this.r = 50;
+    const playField = document.querySelector('.playField');
+    let gameOver = true;
+    playField.addEventListener("click", function(event) {
+        if (event.currentTarget !== event.target){
+            return;
+        }
+        gameOver = true;
+    }, false);
+    const circles = [];
+    let score = 0;
+    let highScore = 0;
+    let difficulty;
+    let radius = 0;
+
+    function startGame(){
+        if(gameOver){
+            gameOver = false;
+            radius = checkRadioButtons();
+            gameLoop();
+        }
+        return;
     }
 
-    render(){
-        this.el.setAttribute('cx', x);
-        this.el.setAttribute('cy', y);
-        this.el.setAttribute('r', 50);
-        this.el.setAttribute('fill', 'red');
+    function gameLoop(){
+        const gameOver = checkGameStatus();
+        if(gameOver){
+            stopGame();
+        } else {
+            checkBallStatus();
+            addCircle();
+            updateCircles();
+            setTimeout(gameLoop, 1000 - (score * 10));
+        }
+    }
+    function checkRadioButtons(){
+        return document.querySelector('input[name="difficulty"]:checked').value;
+    }
+    function addCircle(){
+        const ball = new Ball(radius);
+        circles.push(ball);
+    }
+    function updateCircles(){
+        circles.map(circle=>circle.reduce());
+        circles.map(circle=>circle.render());
     }
 
-    reduce(){
-        this.r -= 5;
+    function checkBallStatus(){
+        circles.forEach((circle, i)=>{  
+            if(circles[i].dead){
+                circle = circles.splice(i,1);
+                score++;
+                if(score > highScore){
+                    highScore = score;
+                    document.querySelector('#topScore').innerHTML = "High Score: " + highScore;
+                }
+            }
+        })
+    }
+    function checkGameStatus(){
+        if(circles.length > 10 || gameOver){
+            return true;
+        } 
+        return false;
+    }
+ 
+
+    function printScore(){
+        window.alert('Your Score is ' + score);
     }
 
-    remove(){
-        this.target.removeChild(this.el);
+    function stopGame(){
+        clearBoard();
+        printScore();
+        circles.length = 0;
+        score = 0;
     }
-}
 
-// -------- javascript functions --------------
-function startGame(){
-    makeCircle();
-    myBall.reduce();
-    console.log(myBall);
-
-}
-
-function makeCircle(){
-    const x = Math.floor(Math.random() * 900 + 50);
-    const y = Math.floor(Math.random() * 450 + 50);
-    let myBall = new Ball(x, y);
-
-    myBall.render();
-}
-
-function reduce(){
-    while(r > 0){
-        myBall.reduce();
+    function quitGame(){
+        gameOver = true;
     }
-}
+
+    function clearBoard(){
+        while(playField.lastChild !== document.querySelector('text')){
+            playField.removeChild(playField.lastChild);
+        }
+    }
