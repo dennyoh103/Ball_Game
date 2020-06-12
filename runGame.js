@@ -29,7 +29,7 @@
             checkBallStatus();
             addCircle();
             updateCircles();
-            setTimeout(gameLoop, 1000 - (score * 10));
+            setTimeout(gameLoop, 1000 - (score * 7.5));
         }
     }
     function checkRadioButtons(){
